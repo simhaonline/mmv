@@ -1,0 +1,12 @@
+#!/bin/sh
+
+echo -n "Username: "
+read -r user
+echo -n "Password: "
+read -r password
+
+record="$(smtpctl encrypt "$password")"
+record="$user@<domain>:$record:vmail:2000:2000:/var/vmail/<domain>/$user::userdb_mail=maildir:/var/vmail/<domain>/$user"
+echo "$record" >> /etc/mail/credentials
+
+echo "$user@<domain>: vmail" >> /etc/mail/virtuals

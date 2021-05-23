@@ -1,0 +1,4 @@
+abuse@<domain>: admin@<domain>
+hostmaster@<domain>: admin@<domain>
+postmaster@<domain>: admin@<domain>
+webmaster@<domain>: admin@<domain>

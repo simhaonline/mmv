@@ -1,0 +1,9 @@
+tls cert
+/etc/ssl/private/<maildom>.key
+/etc/ssl/<maildom>.crt
+
+dkim cert
+/etc/mail/dkim/<domain>.key
+/etc/mail/dkim/public.key
+
+dkim selector - "mail"
