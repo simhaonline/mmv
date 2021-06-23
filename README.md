@@ -6,8 +6,7 @@ mmv is a script for setting up a personal email server on OpenBSD using
 virtual users.
 
 As you might have guessed, there also exists a fork -
-[mms](https://git.yotsev.xyz/mms)
-- that uses system users.
+[mms](https://git.yotsev.xyz/mms) - that uses system users.
 
 WARNING: The script is still in development and liable to drastic
 changes with no backwards compatibility.
