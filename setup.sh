@@ -7,30 +7,42 @@ replace() { \
 sed "s/<domain>/$domain/g;s/<maildom>/$maildom/g" $1
 }
 
+success() { \
+    echo "\033[1;32m==================================================="
+    echo "$@"
+    echo "===================================================\033[0m"
+}
+
+failure() { \
+    echo "\033[1;31m==================================================="
+    echo "$@"
+    echo "\033[0m==================================================="
+}
+
 #
 # install required software
 #
 
 pkg_add opensmtpd-extras opensmtpd-filter-rspamd dovecot dovecot-pigeonhole rspamd redis sieve &&
 
-echo "\nInstalled required software\n" &&
+success Installed required software &&
 
 #
 # certs
 #
 
-replace files/acme-client.conf > /etc/acme-client.conf &&
+replace files/acme-client.conf >> /etc/acme-client.conf &&
 
-replace files/httpd.conf > /etc/httpd.conf &&
+replace files/httpd.conf >> /etc/httpd.conf &&
 
 rcctl enable httpd &&
 rcctl start httpd &&
 
 acme-client -v $maildom &&
 
-replace files/daily.local > /etc/daily.local &&
+replace files/daily.local >> /etc/daily.local &&
 
-echo "\nCreated and signed tls certificates (letencrypt)\n" &&
+success Created and signed tls certificates (letencrypt) &&
 
 #
 # vmail user & authentication
@@ -44,11 +56,11 @@ useradd -c "Virtual Mail Account" -d /var/vmail -s /sbin/nologin \
 mkdir -p /var/vmail &&
 chown vmail:vmail /var/vmail &&
 
-replace files/virtuals > /etc/mail/virtuals &&
+replace files/virtuals >> /etc/mail/virtuals &&
 replace files/newuser > ./newuser &&
 chmod +x ./newuser &&
 
-echo "\nCreated vmail user & authentication file\n" &&
+success Created vmail user & authentication file &&
 
 #
 # smtpd
@@ -56,7 +68,7 @@ echo "\nCreated vmail user & authentication file\n" &&
 
 replace files/smtpd.conf > /etc/smtpd.conf &&
 
-echo "\nConfigured OpenSMTPD\n" &&
+success Configured OpenSMTPD &&
 
 #
 # dovecot
@@ -90,7 +102,7 @@ chmod 0755 /usr/local/lib/dovecot/sieve/sa-learn-spam.sh &&
 rcctl enable dovecot &&
 rcctl start dovecot &&
 
-echo "\nConfigured Dovecot\n" &&
+success Configured Dovecot &&
 
 #
 # rspamd
@@ -109,22 +121,22 @@ rcctl enable redis rspamd &&
 rcctl start redis rspamd &&
 rcctl restart smtpd &&
 
-echo "\nConfigured rspamd\n" &&
+success Configured rspamd &&
 
 #
 # dns
 #
 
-pub_key=$(cat /etc/mail/dkim/public.key | grep -v --- | tr -d '\n' ) &&
+pub_key=$(grep -v -e "---" /etc/mail/dkim/public.key | tr -d '\n' ) &&
 
 mkdir -p dns &&
 echo "mail._domainkey.$domain. IN TXT \"v=DKIM1;k=rsa;p=$pub_key\"" > ./dns/dkim-record &&
 echo "$domain. IN TXT \"v=spf1 mx -all\"" > ./dns/spf-record &&
 echo "_dmarc.$domain. IN TXT \"v=DMARC1;p=none;pct=100;rua=mailto:postmaster@$domain\"" > ./dns/dmarc-record &&
 
-echo "\nWrote relevant dns records in ./dns/\n" &&
+success Wrote relevant dns records in ./dns/ &&
 # TODO: does .forward work with virtual users?
-echo \
+success \
 "The creation of an admin account is required for this setup! Email to
 it can be forwarded to an email address written in:
 /var/vmail/$domain/admin/.forward
