@@ -25,7 +25,7 @@ failure() { \
 
 pkg_add opensmtpd-extras opensmtpd-filter-rspamd dovecot dovecot-pigeonhole rspamd redis sieve &&
 
-success Installed required software &&
+success "Installed required software" &&
 
 #
 # certs
@@ -42,7 +42,7 @@ acme-client -v $maildom &&
 
 replace files/daily.local >> /etc/daily.local &&
 
-success Created and signed tls certificates (letencrypt) &&
+success "Created and signed tls certificates (letencrypt)" &&
 
 #
 # vmail user & authentication
@@ -60,7 +60,7 @@ replace files/virtuals >> /etc/mail/virtuals &&
 replace files/newuser > ./newuser &&
 chmod +x ./newuser &&
 
-success Created vmail user & authentication file &&
+success "Created vmail user & authentication file" &&
 
 #
 # smtpd
@@ -68,7 +68,7 @@ success Created vmail user & authentication file &&
 
 replace files/smtpd.conf > /etc/smtpd.conf &&
 
-success Configured OpenSMTPD &&
+success "Configured OpenSMTPD" &&
 
 #
 # dovecot
@@ -102,7 +102,7 @@ chmod 0755 /usr/local/lib/dovecot/sieve/sa-learn-spam.sh &&
 rcctl enable dovecot &&
 rcctl start dovecot &&
 
-success Configured Dovecot &&
+success "Configured Dovecot" &&
 
 #
 # rspamd
@@ -121,7 +121,7 @@ rcctl enable redis rspamd &&
 rcctl start redis rspamd &&
 rcctl restart smtpd &&
 
-success Configured rspamd &&
+success "Configured rspamd" &&
 
 #
 # dns
@@ -134,7 +134,7 @@ echo "mail._domainkey.$domain. IN TXT \"v=DKIM1;k=rsa;p=$pub_key\"" > ./dns/dkim
 echo "$domain. IN TXT \"v=spf1 mx -all\"" > ./dns/spf-record &&
 echo "_dmarc.$domain. IN TXT \"v=DMARC1;p=none;pct=100;rua=mailto:postmaster@$domain\"" > ./dns/dmarc-record &&
 
-success Wrote relevant dns records in ./dns/ &&
+success "Wrote relevant dns records in ./dns/" &&
 # TODO: does .forward work with virtual users?
 success \
 "The creation of an admin account is required for this setup! Email to
