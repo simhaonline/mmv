@@ -66,7 +66,7 @@ success "Created vmail user & authentication file" &&
 # smtpd
 #
 
-replace files/smtpd.conf > /etc/smtpd.conf &&
+replace files/smtpd.conf > /etc/mail/smtpd.conf &&
 
 success "Configured OpenSMTPD" &&
 
