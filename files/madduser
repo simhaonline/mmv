@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $# != 2 ] then
+if [ $# != 2 ]; then
     echo "Error: Invalid number of arguments"
     echo "Usage: madduser DOMAIN USERNAME"
     return 1

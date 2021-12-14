@@ -1,8 +1,10 @@
 #!/bin/sh
 
-[ $# != 2 ] &&
-echo "Error: Invalid number of arguments" &&
-echo "Usage: mpasswd DOMAIN USERNAME"
+if [ $# != 2 ]; then
+    echo "Error: Invalid number of arguments"
+    echo "Usage: madduser DOMAIN USERNAME"
+    return 1
+fi
 
 domain=$1
 user=$2
