@@ -26,12 +26,12 @@ failure() { \
 
 [ -f /etc/mail/maindom ] && firstuse="false"
 
-if [ $firstuse = "true" ] then;
-    echo "$domain" > /etc/mail/maindom &&
-    echo "$domain" >> /etc/mail/domains &&
+if [ $firstuse = "true" ]; then
+    echo "$domain" > /etc/mail/maindom
+    echo "$domain" >> /etc/mail/domains
     success "Setting up email for the first time"
 else
-    echo "$domain" >> /etc/mail/domains &&
+    echo "$domain" >> /etc/mail/domains
     success "Adding domain $domain to existing setup"
 fi
 
