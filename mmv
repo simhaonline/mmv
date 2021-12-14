@@ -26,15 +26,20 @@ failure() { \
 
 [ -f /etc/mail/maindom ] && firstuse="false"
 
-[ $firstuse = "true" ] &&
-echo "$domain" > /etc/mail/maindom
-
-grep -q "$domain" /etc/mail/domains > /dev/null ||
-echo "$domain" >> /etc/mail/domains
+if [ $firstuse = "true" ] then;
+    echo "$domain" > /etc/mail/maindom &&
+    echo "$domain" >> /etc/mail/domains &&
+    success "Setting up email for the first time"
+else
+    echo "$domain" >> /etc/mail/domains &&
+    success "Adding domain $domain to existing setup"
+fi
 
 #
 # install required software
 #
+
+[ $firstuse = "true" ] &&
 
 pkg_add -u &&
 pkg_add -I opensmtpd-extras opensmtpd-filter-rspamd dovecot \
@@ -53,7 +58,7 @@ replace files/acme-client.conf >> /etc/acme-client.conf &&
 replace files/httpd.conf >> /etc/httpd.conf &&
 
 rcctl enable httpd &&
-rcctl restart httpd &&
+rcctl start httpd &&
 
 acme-client -v $maildom &&
 
@@ -179,7 +184,6 @@ it can be forwarded to an email address written in:
 /var/vmail/$domain/admin/.forward
 Please choose a password for the \"admin\" user." &&
 
-madduser $domain admin &&
-rcctl restart smtpd
+madduser $domain admin
 
 success "Done!"
