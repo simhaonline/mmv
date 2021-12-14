@@ -9,19 +9,19 @@ fi
 domain=$1
 user=$2
 
-if [ -z $(grep "$domain" /etc/mail/domains 2> /dev/null) ]; then
+if [ -z "$(grep "$domain" /etc/mail/domains 2> /dev/null)" ]; then
     echo "Error: Invalid domain"
     echo "Info: It should be one of the following:"
     cat /etc/mail/domains
     return 1
 fi
 
-if [ -n $(grep "$user@$domain" /etc/mail/credentials 2> /dev/null) ]; then
+if [ -n "$(grep "$user@$domain" /etc/mail/credentials 2> /dev/null)" ]; then
     echo "Error: User already exists in /etc/mail/credentials"
     return 1
 fi
 
-if [ -n $(grep "$user@$domain" /etc/mail/virtuals 2> /dev/null) ]; then
+if [ -n "$(grep "$user@$domain" /etc/mail/virtuals 2> /dev/null)" ]; then
     echo "Error: User already exists in /etc/mail/virtuals"
     return 1
 fi
