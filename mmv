@@ -24,7 +24,7 @@ failure() { \
 # register domain
 #
 
-[ -f /etc/mail/maindom ] || firstuse="false"
+[ -f /etc/mail/maindom ] && firstuse="false"
 
 [ $firstuse = "true" ] &&
 echo "$domain" > /etc/mail/maindom
