@@ -24,12 +24,12 @@ failure() { \
 # register domain
 #
 
-[ test -f /etc/mail/maindom ] || firstuse="false"
+[ -f /etc/mail/maindom ] || firstuse="false"
 
 [ $firstuse = "true" ] &&
-echo "$domain" >> /etc/mail/maindom
+echo "$domain" > /etc/mail/maindom
 
-grep "$domain" /etc/mail/domains > /dev/null ||
+grep -q "$domain" /etc/mail/domains > /dev/null ||
 echo "$domain" >> /etc/mail/domains
 
 #
@@ -155,7 +155,7 @@ success "Configured rspamd"
 [ $firstuse = "true" ] &&
 
 pub_key=$(grep -v -e "---" /etc/mail/dkim/public.key | tr -d '\n' ) &&
-mkdir -p dns &&
+mkdir -p /etc/mail/dns &&
 echo "mail._domainkey.$domain. IN TXT \"v=DKIM1;k=rsa;p=$pub_key\"" > /etc/mail/dns/$domain/dkim &&
 echo "$domain. IN TXT \"v=spf1 mx -all\"" > /etc/mail/dns/$domain/spf &&
 echo "_dmarc.$domain. IN TXT
