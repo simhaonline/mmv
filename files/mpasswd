@@ -7,16 +7,22 @@ echo "Usage: mpasswd DOMAIN USERNAME"
 domain=$1
 user=$2
 
-grep "$domain" /etc/mail/domains > /dev/null ||
-echo "Error: Invalid domain" &&
-echo "Info: It should be one of the following:" &&
-cat /etc/mail/domains &&
-return 1
+if [ -z $(grep "$domain" /etc/mail/domains 2> /dev/null) ] then
+    echo "Error: Invalid domain"
+    echo "Info: It should be one of the following:"
+    cat /etc/mail/domains
+    return 1
+fi
 
-grep "^$user@$domain" /etc/mail/credentials > /dev/null &&
-grep "^$user@$domain" /etc/mail/virtuals > /dev/null ||
-echo "Error: Invalid username" &&
-return 1
+if [ -z $(grep "$user@$domain" /etc/mail/credentials 2> /dev/null) ] then
+    echo "Error: User doesn't exist in /etc/mail/credentials"
+    return 1
+fi
+
+if [ -z $(grep "$user@$domain" /etc/mail/virtuals 2> /dev/null) ] then
+    echo "Error: User doesn't exist in /etc/mail/virtuals"
+    return 1
+fi
 
 echo -n "Password: "
 stty -echo
