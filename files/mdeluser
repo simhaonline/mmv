@@ -16,7 +16,7 @@ if [ -z "$(grep "$domain" /etc/mail/domains 2> /dev/null)" ]; then
     return 1
 fi
 
-if [ -z "$(grep "$user@$domain" /etc/mail/credentials 2> /dev/null)" ]; then
+if [ -z "$(grep "^^$user@$domain" /etc/mail/credentials 2> /dev/null)" ]; then
     echo "Error: User doesn't exist in /etc/mail/credentials"
     return 1
 fi
@@ -29,9 +29,9 @@ fi
 echo -n "Delete records for user \"$user\"? (yes/no): " &&
 read responce &&
 [ $responce = "yes" ] &&
-sed "/$user@$domain/d" /etc/mail/credentials > temp-cred-file &&
+sed "/^$user@$domain/d" /etc/mail/credentials > temp-cred-file &&
 mv temp-cred-file /etc/mail/credentials &&
-sed "/$user@$domain/d" /etc/mail/virtuals > temp-virt-file &&
+sed "/^$user@$domain/d" /etc/mail/virtuals > temp-virt-file &&
 mv temp-virt-file /etc/mail/virtuals &&
 
 echo -n "Delete all mail associated with user \"$user\"? (yes/no): " &&
