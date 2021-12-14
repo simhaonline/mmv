@@ -36,6 +36,7 @@ echo "$domain" >> /etc/mail/domains
 # install required software
 #
 
+pkg_add -u &&
 pkg_add -I opensmtpd-extras opensmtpd-filter-rspamd dovecot \
     dovecot-pigeonhole rspamd-3.0 redis sieve tor &&
 
