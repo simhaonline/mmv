@@ -3,6 +3,7 @@
 domain=$1
 maildom="mail.$domain"
 firstuse="true"
+failed="false"
 
 replace() { \
 sed "s/<domain>/$domain/g;s/<maildom>/$maildom/g" $1
@@ -18,6 +19,7 @@ failure() { \
     echo "\033[1;31m========================================================================"
     echo "$@"
     echo "========================================================================\033[0m"
+    failed="true"
 }
 
 #
@@ -45,7 +47,8 @@ pkg_add -u &&
 pkg_add -I opensmtpd-extras opensmtpd-filter-rspamd dovecot \
     dovecot-pigeonhole rspamd-3.0 redis sieve tor &&
 
-success "Installed required software"
+success "Installed required software" ||
+failure "Failed to install required software"
 
 #
 # certs
@@ -64,7 +67,8 @@ acme-client -v $maildom &&
 
 replace files/daily.local >> /etc/daily.local &&
 
-success "Created and signed tls certificates (letencrypt)"
+success "Created and signed tls certificates (letsencrypt)" ||
+failure "Failed to sign tls certificates (letsencrypt)"
 
 #
 # vmail user & authentication
@@ -82,7 +86,8 @@ chown vmail:vmail /var/vmail &&
 
 replace files/virtuals >> /etc/mail/virtuals &&
 
-success "Created vmail user & authentication file"
+success "Created vmail user & authentication file" ||
+failure "Failed to createvmail user & authentication file"
 
 #
 # smtpd
@@ -95,7 +100,10 @@ replace files/smtpd.conf > /etc/mail/smtpd.conf &&
 cp files/madduser /usr/local/bin/ &&
 cp files/mdeluser /usr/local/bin/ &&
 
-success "Configured OpenSMTPD"
+rcctl restart smtpd &&
+
+success "Configured OpenSMTPD" ||
+failure "Failed to configure OpenSMTPD"
 
 #
 # dovecot
@@ -131,7 +139,8 @@ chmod 0755 /usr/local/lib/dovecot/sieve/sa-learn-spam.sh &&
 rcctl enable dovecot &&
 rcctl start dovecot &&
 
-success "Configured Dovecot"
+success "Configured Dovecot" ||
+failure "Failed to configure Dovecot"
 
 #
 # rspamd
@@ -152,7 +161,8 @@ rcctl enable redis rspamd &&
 rcctl start redis rspamd &&
 rcctl restart smtpd &&
 
-success "Configured rspamd"
+success "Configured rspamd" ||
+failure "Failed to configure rspamd"
 
 #
 # dns
@@ -172,7 +182,8 @@ success "Wrote relevant dns records in /etc/mail/dns/$domain/"
 [ $firstuse = "false" ] &&
 
 echo "$domain. IN MX 0 $maildom." > /etc/mail/dns/$domain/mx &&
-success "Wrote relevant dns records in /etc/mail/dns/$domain/"
+success "Wrote relevant dns records in /etc/mail/dns/$domain/" ||
+failure "Failed to write relevant dns records in /etc/mail/dns/$domain/"
 
 # TODO: does .forward work with virtual users?
 
@@ -182,8 +193,10 @@ success \
 "The creation of an admin account is required for this setup! Email to
 it can be forwarded to an email address written in:
 /var/vmail/$domain/admin/.forward
-Please choose a password for the \"admin\" user." &&
+Choose a password for the \"admin\" user." &&
 
 madduser $domain admin
 
-success "Done!"
+[ $failed = "false" ] &&
+success "Done!" ||
+failure"Installation incomplete, check the errors and correct them!"
