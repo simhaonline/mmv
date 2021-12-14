@@ -44,7 +44,7 @@ And change a password with `mpasswd`.
 
     mpasswd DOMAIN USERNAME
 
-# Troubleshooting
+## Troubleshooting
 
 If the script fails to sign the TLS certificate, it's likely that
 OpenSMTPD and Dovecot will show up as failed. In most cases just getting
