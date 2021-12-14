@@ -1,0 +1,17 @@
+*** torrc.def	2021-12-14 13:20:57.257968529 +0000
+--- torrc.mod	2021-12-14 13:20:52.464519077 +0000
+***************
+*** 75,82 ****
+--- 75,86 ----
+  #HiddenServiceDir /var/tor/other_hidden_service/
+  #HiddenServicePort 80 127.0.0.1:80
+  #HiddenServicePort 22 127.0.0.1:22
+  
++ HiddenServiceDir /etc/mail/hidden-service/
++ HiddenServicePort 587 127.0.0.1:587
++ HiddenServicePort 993 127.0.0.1:993
++ 
+  ################ This section is just for relays #####################
+  #
+  ## See https://www.torproject.org/docs/tor-doc-relay for details.
+  

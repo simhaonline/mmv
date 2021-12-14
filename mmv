@@ -165,6 +165,18 @@ success "Configured rspamd" ||
 failure "Failed to configure rspamd"
 
 #
+# tor hidden service
+#
+
+patch /etc/tor/torrc files/torrc.diff
+
+rcctl enable tor &&
+rcctl start tor &&
+
+success "Configured tor, see address from /etc/mail/hidden-service/hostname" ||
+failure "Failed to configure tor"
+
+#
 # dns
 #
 
@@ -185,6 +197,9 @@ echo "$domain. IN MX 0 $maildom." > /etc/mail/dns/$domain/mx &&
 success "Wrote relevant dns records in /etc/mail/dns/$domain/" ||
 failure "Failed to write relevant dns records in /etc/mail/dns/$domain/"
 
+#
+# setup admin account
+#
 # TODO: does .forward work with virtual users?
 
 [ $firstuse = "true" ] &&
@@ -196,6 +211,10 @@ it can be forwarded to an email address written in:
 Choose a password for the \"admin\" user." &&
 
 madduser $domain admin
+
+#
+# final status
+#
 
 [ $failed = "false" ] &&
 success "Done!" ||
