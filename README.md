@@ -7,9 +7,6 @@ virtual users. It allows one to host email for multiple domains on the
 same server. It also sets up a tor hidden service by default so that one
 can fetch email from public WiFi anonymously.
 
-WARNING: The script is still in development and liable to drastic
-changes with no backwards compatibility.
-
 ## Prerequisites
 
 The script automates as much as possible but there is one thing out of
@@ -51,5 +48,4 @@ And change a password with `mpasswd`.
 
 If the script fails to sign the TLS certificate, it's likely that
 OpenSMTPD and Dovecot will show up as failed. In most cases just getting
-the certificate will fix them because they are just failing to load
-them.
+the certificate will fix them because they are just failing to load it.
