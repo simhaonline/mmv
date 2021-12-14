@@ -1,0 +1,31 @@
+#!/bin/sh
+
+[ $# != 2 ] &&
+echo "Error: Invalid number of arguments" &&
+echo "Usage: mpasswd DOMAIN USERNAME"
+
+domain=$1
+user=$2
+
+grep "$domain" /etc/mail/domains > /dev/null ||
+echo "Error: Invalid domain" &&
+echo "Info: It should be one of the following:" &&
+cat /etc/mail/domains &&
+return 1
+
+grep "^$user@$domain" /etc/mail/credentials > /dev/null &&
+grep "^$user@$domain" /etc/mail/virtuals > /dev/null ||
+echo "Error: Invalid username" &&
+return 1
+
+echo -n "Password: "
+stty -echo
+read password
+stty echo
+
+record="$(smtpctl encrypt "$password")"
+record="$user@$domain:$record:vmail:2000:2000:/var/vmail/$domain/$user::userdb_mail=maildir:/var/vmail/$domain/$user"
+
+sed "s#^$user@$domain.*#$record#g"
+
+echo "$record" >> /etc/mail/credentials

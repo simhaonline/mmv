@@ -2,51 +2,69 @@
 
 domain=$1
 maildom="mail.$domain"
+firstuse="true"
 
 replace() { \
 sed "s/<domain>/$domain/g;s/<maildom>/$maildom/g" $1
 }
 
 success() { \
-    echo "\033[1;32m==================================================="
+    echo "\033[1;32m========================================================================"
     echo "$@"
-    echo "===================================================\033[0m"
+    echo "========================================================================\033[0m"
 }
 
 failure() { \
-    echo "\033[1;31m==================================================="
+    echo "\033[1;31m========================================================================"
     echo "$@"
-    echo "\033[0m==================================================="
+    echo "========================================================================\033[0m"
 }
+
+#
+# register domain
+#
+
+[ test -f /etc/mail/maindom ] || firstuse="false"
+
+[ $firstuse = "true" ] &&
+echo "$domain" >> /etc/mail/maindom
+
+grep "$domain" /etc/mail/domains > /dev/null ||
+echo "$domain" >> /etc/mail/domains
 
 #
 # install required software
 #
 
-pkg_add opensmtpd-extras opensmtpd-filter-rspamd dovecot dovecot-pigeonhole rspamd redis sieve &&
+pkg_add -I opensmtpd-extras opensmtpd-filter-rspamd dovecot \
+    dovecot-pigeonhole rspamd-3.0 redis sieve tor &&
 
-success "Installed required software" &&
+success "Installed required software"
 
 #
 # certs
 #
+
+[ $firstuse = "true" ] &&
 
 replace files/acme-client.conf >> /etc/acme-client.conf &&
 
 replace files/httpd.conf >> /etc/httpd.conf &&
 
 rcctl enable httpd &&
-rcctl start httpd &&
+rcctl restart httpd &&
 
 acme-client -v $maildom &&
 
 replace files/daily.local >> /etc/daily.local &&
 
-success "Created and signed tls certificates (letencrypt)" &&
+success "Created and signed tls certificates (letencrypt)"
 
 #
 # vmail user & authentication
 #
+
+[ $firstuse = "true" ] &&
 
 touch /etc/mail/credentials &&
 chmod 0440 /etc/mail/credentials &&
@@ -57,22 +75,27 @@ mkdir -p /var/vmail &&
 chown vmail:vmail /var/vmail &&
 
 replace files/virtuals >> /etc/mail/virtuals &&
-replace files/newuser > ./newuser &&
-chmod +x ./newuser &&
 
-success "Created vmail user & authentication file" &&
+success "Created vmail user & authentication file"
 
 #
 # smtpd
 #
 
+[ $firstuse = "true" ] &&
+
 replace files/smtpd.conf > /etc/mail/smtpd.conf &&
 
-success "Configured OpenSMTPD" &&
+cp files/madduser /usr/local/bin/ &&
+cp files/mdeluser /usr/local/bin/ &&
+
+success "Configured OpenSMTPD"
 
 #
 # dovecot
 #
+
+[ $firstuse = "true" ] &&
 
 echo "dovecot:\\
         :openfiles-cur=1024:\\
@@ -102,11 +125,13 @@ chmod 0755 /usr/local/lib/dovecot/sieve/sa-learn-spam.sh &&
 rcctl enable dovecot &&
 rcctl start dovecot &&
 
-success "Configured Dovecot" &&
+success "Configured Dovecot"
 
 #
 # rspamd
 #
+
+[ $firstuse = "true" ] &&
 
 mkdir -p /etc/mail/dkim &&
 openssl genrsa -out /etc/mail/dkim/$domain.key 1024 &&
@@ -121,27 +146,39 @@ rcctl enable redis rspamd &&
 rcctl start redis rspamd &&
 rcctl restart smtpd &&
 
-success "Configured rspamd" &&
+success "Configured rspamd"
 
 #
 # dns
 #
 
+[ $firstuse = "true" ] &&
+
 pub_key=$(grep -v -e "---" /etc/mail/dkim/public.key | tr -d '\n' ) &&
-
 mkdir -p dns &&
-echo "mail._domainkey.$domain. IN TXT \"v=DKIM1;k=rsa;p=$pub_key\"" > ./dns/dkim-record &&
-echo "$domain. IN TXT \"v=spf1 mx -all\"" > ./dns/spf-record &&
-echo "_dmarc.$domain. IN TXT \"v=DMARC1;p=none;pct=100;rua=mailto:postmaster@$domain\"" > ./dns/dmarc-record &&
+echo "mail._domainkey.$domain. IN TXT \"v=DKIM1;k=rsa;p=$pub_key\"" > /etc/mail/dns/$domain/dkim &&
+echo "$domain. IN TXT \"v=spf1 mx -all\"" > /etc/mail/dns/$domain/spf &&
+echo "_dmarc.$domain. IN TXT
+\"v=DMARC1;p=quarantine;pct=100;rua=mailto:postmaster@$domain\"" > /etc/mail/dns/$domain/dmarc &&
+echo "$domain. IN MX 0 $maildom." > /etc/mail/dns/$domain/mx &&
+success "Wrote relevant dns records in /etc/mail/dns/$domain/"
 
-success "Wrote relevant dns records in ./dns/" &&
+[ $firstuse = "false" ] &&
+
+echo "$domain. IN MX 0 $maildom." > /etc/mail/dns/$domain/mx &&
+success "Wrote relevant dns records in /etc/mail/dns/$domain/"
+
 # TODO: does .forward work with virtual users?
+
+[ $firstuse = "true" ] &&
+
 success \
 "The creation of an admin account is required for this setup! Email to
 it can be forwarded to an email address written in:
 /var/vmail/$domain/admin/.forward
-New users can be similarly added by running ./newuser. Please use the
-username \"admin\" and a password of your choosing" &&
+Please choose a password for the \"admin\" user." &&
 
-./newuser &&
+madduser $domain admin &&
 rcctl restart smtpd
+
+success "Done!"

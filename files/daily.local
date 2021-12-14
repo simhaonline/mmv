@@ -1,2 +1,1 @@
-# renew Let's Encrypt certificate if necessary
-acme-client -v <maildom>
+acme-client -v <maildom> && reboot

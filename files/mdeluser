@@ -1,0 +1,34 @@
+#!/bin/sh
+
+[ $# != 2 ] &&
+echo "Error: Invalid number of arguments" &&
+echo "Usage: mdeluser DOMAIN USERNAME"
+
+domain=$1
+user=$2
+
+grep "$domain" /etc/mail/domains > /dev/null ||
+echo "Error: Invalid domain" &&
+echo "Info: It should be one of the following:" &&
+cat /etc/mail/domains &&
+return 1
+
+grep "^$user@" /etc/mail/credentials > /dev/null ||
+echo "Error: User already exists" && return 1
+
+grep "^$user@" /etc/mail/virtuals > /dev/null ||
+echo "Error: User already exists in /etc/mail/virtuals" && return 1
+
+echo -n "Delete records for user \"$user\"? (yes/no): " &&
+read responce &&
+[ $responce = "yes" ] &&
+sed "/$user@$domain/d" /etc/mail/credentials > temp-cred-file &&
+mv temp-cred-file /etc/mail/credentials &&
+sed "/$user@$domain/d" /etc/mail/virtuals > temp-virt-file &&
+mv temp-virt-file /etc/mail/virtuals &&
+
+echo -n "Delete all mail associated with user \"$user\"? (yes/no): " &&
+read responce &&
+[ $responce = "yes" ] &&
+rm -rf /var/vmail/$domain/$user ||
+return 0
