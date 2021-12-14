@@ -155,7 +155,7 @@ success "Configured rspamd"
 [ $firstuse = "true" ] &&
 
 pub_key=$(grep -v -e "---" /etc/mail/dkim/public.key | tr -d '\n' ) &&
-mkdir -p /etc/mail/dns &&
+mkdir -p /etc/mail/dns/$domain &&
 echo "mail._domainkey.$domain. IN TXT \"v=DKIM1;k=rsa;p=$pub_key\"" > /etc/mail/dns/$domain/dkim &&
 echo "$domain. IN TXT \"v=spf1 mx -all\"" > /etc/mail/dns/$domain/spf &&
 echo "_dmarc.$domain. IN TXT
