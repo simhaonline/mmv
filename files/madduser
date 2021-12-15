@@ -1,13 +1,13 @@
 #!/bin/sh
 
-if [ $# != 2 ]; then
+if [ $# != 1 ]; then
     echo "Error: Invalid number of arguments"
-    echo "Usage: madduser DOMAIN USERNAME"
+    echo "Usage: madduser username@domain.tld"
     return 1
 fi
 
-domain=$1
-user=$2
+user="$(echo $1 | cut -d '@' -f 1)"
+domain="$(echo $1 | cut -d '@' -f 2)"
 
 if [ -z "$(grep "$domain" /etc/mail/domains 2> /dev/null)" ]; then
     echo "Error: Invalid domain"
