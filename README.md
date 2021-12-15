@@ -31,18 +31,20 @@ registrar's interface.
 
 ## Usage
 
-After everything is in place, you can use the newly created script
-`madduser` to add a user account. You'll be prompted for a password.
+After everything is in place, you can use the newly installed scripts to
+manage user accounts.
 
-    madduser DOMAIN USERNAME
+To add a user:      (you'll be prompted for a password)
 
-You can similarly delete users with `mdeluser`.
+    madduser username@domain.tld
 
-    mdeluser DOMAIN USERNAME
+To delete a user:
 
-And change a password with `mpasswd`.
+    mdeluser username@domain.tld
 
-    mpasswd DOMAIN USERNAME
+To change a user's password:
+
+    mpasswd username@domain.tld
 
 ## Troubleshooting
 
