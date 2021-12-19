@@ -205,6 +205,7 @@ maindom="$(cat /etc/mail/maindom)"
 
 mkdir /etc/mail/dns/$domain
 echo "$domain. IN MX 0 $maindom." > /etc/mail/dns/$domain/mx &&
+echo "$domain. IN TXT \"v=spf1 mx -all\"" > /etc/mail/dns/$domain/spf &&
 success "Wrote relevant dns records in /etc/mail/dns/$domain/" ||
 failure "Failed to write relevant dns records in /etc/mail/dns/$domain/"
 
