@@ -201,8 +201,10 @@ success "Adding domain $domain to existing setup"
 # dns
 #
 
+maindom="$(cat /etc/mail/maindom)"
+
 mkdir /etc/mail/dns/$domain
-echo "$domain. IN MX 0 $maildom." > /etc/mail/dns/$domain/mx &&
+echo "$domain. IN MX 0 $maindom." > /etc/mail/dns/$domain/mx &&
 success "Wrote relevant dns records in /etc/mail/dns/$domain/" ||
 failure "Failed to write relevant dns records in /etc/mail/dns/$domain/"
 
