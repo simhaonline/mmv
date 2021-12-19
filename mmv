@@ -2,7 +2,6 @@
 
 domain=$1
 maildom="mail.$domain"
-firstuse="true"
 failed="false"
 
 replace() { \
@@ -22,26 +21,20 @@ failure() { \
     failed="true"
 }
 
+# first use?
+if [ ! -f /etc/mail/maindom ]; then
+
 #
 # register domain
 #
 
-[ -f /etc/mail/maindom ] && firstuse="false"
-
-if [ $firstuse = "true" ]; then
-    echo "$domain" > /etc/mail/maindom
-    echo "$domain" >> /etc/mail/domains
-    success "Setting up email for the first time"
-else
-    echo "$domain" >> /etc/mail/domains
-    success "Adding domain $domain to existing setup"
-fi
+echo "$domain" > /etc/mail/maindom &&
+echo "$domain" >> /etc/mail/domains &&
+success "Setting up email for the first time"
 
 #
 # install required software
 #
-
-[ $firstuse = "true" ] &&
 
 pkg_add -u &&
 pkg_add -I opensmtpd-extras opensmtpd-filter-rspamd dovecot \
@@ -53,8 +46,6 @@ failure "Failed to install required software"
 #
 # certs
 #
-
-[ $firstuse = "true" ] &&
 
 replace files/acme-client.conf >> /etc/acme-client.conf &&
 
@@ -74,8 +65,6 @@ failure "Failed to sign tls certificates (letsencrypt)"
 # vmail user & authentication
 #
 
-[ $firstuse = "true" ] &&
-
 touch /etc/mail/credentials &&
 chmod 0440 /etc/mail/credentials &&
 chown _smtpd:_dovecot /etc/mail/credentials &&
@@ -93,12 +82,11 @@ failure "Failed to createvmail user & authentication file"
 # smtpd
 #
 
-[ $firstuse = "true" ] &&
-
 replace files/smtpd.conf > /etc/mail/smtpd.conf &&
 
 cp files/madduser /usr/local/bin/ &&
 cp files/mdeluser /usr/local/bin/ &&
+cp files/mpasswd /usr/local/bin/ &&
 
 rcctl restart smtpd &&
 
@@ -108,8 +96,6 @@ failure "Failed to configure OpenSMTPD"
 #
 # dovecot
 #
-
-[ $firstuse = "true" ] &&
 
 echo "dovecot:\\
         :openfiles-cur=1024:\\
@@ -146,8 +132,6 @@ failure "Failed to configure Dovecot"
 # rspamd
 #
 
-[ $firstuse = "true" ] &&
-
 mkdir -p /etc/mail/dkim &&
 openssl genrsa -out /etc/mail/dkim/$domain.key 1024 &&
 openssl rsa -in /etc/mail/dkim/$domain.key \
@@ -168,7 +152,7 @@ failure "Failed to configure rspamd"
 # tor hidden service
 #
 
-patch /etc/tor/torrc files/torrc.diff
+patch /etc/tor/torrc files/torrc.diff &&
 
 rcctl enable tor &&
 rcctl start tor &&
@@ -180,8 +164,6 @@ failure "Failed to configure tor"
 # dns
 #
 
-[ $firstuse = "true" ] &&
-
 pub_key=$(grep -v -e "---" /etc/mail/dkim/public.key | tr -d '\n' ) &&
 mkdir -p /etc/mail/dns/$domain &&
 echo "mail._domainkey.$domain. IN TXT \"v=DKIM1;k=rsa;p=$pub_key\"" > /etc/mail/dns/$domain/dkim &&
@@ -189,20 +171,14 @@ echo "$domain. IN TXT \"v=spf1 mx -all\"" > /etc/mail/dns/$domain/spf &&
 echo "_dmarc.$domain. IN TXT
 \"v=DMARC1;p=quarantine;pct=100;rua=mailto:postmaster@$domain\"" > /etc/mail/dns/$domain/dmarc &&
 echo "$domain. IN MX 0 $maildom." > /etc/mail/dns/$domain/mx &&
-success "Wrote relevant dns records in /etc/mail/dns/$domain/"
-
-[ $firstuse = "false" ] &&
-
-echo "$domain. IN MX 0 $maildom." > /etc/mail/dns/$domain/mx &&
 success "Wrote relevant dns records in /etc/mail/dns/$domain/" ||
 failure "Failed to write relevant dns records in /etc/mail/dns/$domain/"
 
 #
 # setup admin account
 #
-# TODO: does .forward work with virtual users?
 
-[ $firstuse = "true" ] &&
+# TODO: does .forward work with virtual users?
 
 success \
 "The creation of an admin account is required for this setup! Email to
@@ -210,7 +186,27 @@ it can be forwarded to an email address written in:
 /var/vmail/$domain/admin/.forward
 Choose a password for the \"admin\" user." &&
 
-madduser $domain admin
+madduser admin@$domain
+
+else
+
+#
+# register domain
+#
+
+echo "$domain" >> /etc/mail/domains
+success "Adding domain $domain to existing setup"
+
+#
+# dns
+#
+
+mkdir /etc/mail/dns/$domain
+echo "$domain. IN MX 0 $maildom." > /etc/mail/dns/$domain/mx &&
+success "Wrote relevant dns records in /etc/mail/dns/$domain/" ||
+failure "Failed to write relevant dns records in /etc/mail/dns/$domain/"
+
+fi
 
 #
 # final status
