@@ -169,7 +169,7 @@ mkdir -p /etc/mail/dns/$domain &&
 echo "mail._domainkey.$domain. IN TXT \"v=DKIM1;k=rsa;p=$pub_key\"" > /etc/mail/dns/$domain/dkim &&
 echo "$domain. IN TXT \"v=spf1 mx -all\"" > /etc/mail/dns/$domain/spf &&
 echo "_dmarc.$domain. IN TXT
-\"v=DMARC1;p=quarantine;pct=100;rua=mailto:postmaster@$domain\"" > /etc/mail/dns/$domain/dmarc &&
+\"v=DMARC1;p=quarantine;pct=100;ruf=mailto:postmaster@$domain\"" > /etc/mail/dns/$domain/dmarc &&
 echo "$domain. IN MX 0 $maildom." > /etc/mail/dns/$domain/mx &&
 success "Wrote relevant dns records in /etc/mail/dns/$domain/" ||
 failure "Failed to write relevant dns records in /etc/mail/dns/$domain/"
