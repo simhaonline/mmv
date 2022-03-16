@@ -26,14 +26,13 @@ if [ -n "$(grep "^$user@$domain" /etc/mail/virtuals 2> /dev/null)" ]; then
     return 1
 fi
 
-echo -n "Password: "
-stty -echo
-read password
-stty echo
-echo
+echo "Please enter a password."
+password="$(encrypt -p)"
 
-record="$(smtpctl encrypt "$password")"
-record="$user@$domain:$record:vmail:2000:2000:/var/vmail/$domain/$user::userdb_mail=maildir:/var/vmail/$domain/$user"
+record="$user@$domain:$password:vmail:2000:2000:/var/vmail/$domain/$user::userdb_mail=maildir:/var/vmail/$domain/$user"
+
 echo "$record" >> /etc/mail/credentials
-
 echo "$user@$domain: vmail" >> /etc/mail/virtuals
+
+rcctl restart smtpd
+rcctl restart dovecot
