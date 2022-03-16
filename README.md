@@ -34,17 +34,30 @@ registrar's interface.
 After everything is in place, you can use the newly installed scripts to
 manage user accounts.
 
-To add a user:      (you'll be prompted for a password)
+To add a user:                       (you'll be prompted for a password)
 
-    madduser username@domain.tld
+    madduser user@example.com
 
 To delete a user:
 
-    mdeluser username@domain.tld
+    mdeluser user@example.com
 
 To change a user's password:
 
-    mpasswd username@domain.tld
+    mpasswd user@example.com
+
+## IMAPS & SMTP example client settings
+
+* IMAPS
+    * Domain: mail.example.com
+    * Port: 993
+    * Security: TLS
+    * login: user@example.com
+* SMTP
+    * Domain: mail.example.com
+    * Port: 587
+    * Security: STARTTLS
+    * login: user@example.com
 
 ## Troubleshooting
 
