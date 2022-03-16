@@ -26,16 +26,19 @@ if [ -z "$(grep "^$user@$domain" /etc/mail/virtuals 2> /dev/null)" ]; then
     return 1
 fi
 
-echo -n "Delete records for user \"$user\"? (yes/no): " &&
+echo -n "Delete user \"$user\"? (y/n): " &&
 read responce &&
-[ $responce = "yes" ] &&
+[ $responce = "y" ] &&
 sed "/^$user@$domain/d" /etc/mail/credentials > temp-cred-file &&
 mv temp-cred-file /etc/mail/credentials &&
 sed "/^$user@$domain/d" /etc/mail/virtuals > temp-virt-file &&
-mv temp-virt-file /etc/mail/virtuals &&
+mv temp-virt-file /etc/mail/virtuals
 
-echo -n "Delete all mail associated with user \"$user\"? (yes/no): " &&
+echo -n "Delete all mail belonging to user \"$user\"? (y/n): " &&
 read responce &&
-[ $responce = "yes" ] &&
+[ $responce = "y" ] &&
 rm -rf /var/vmail/$domain/$user ||
 return 0
+
+rcctl restart smtpd
+rcctl restart dovecot
